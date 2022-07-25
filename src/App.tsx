@@ -24,7 +24,7 @@ function App() {
 
   function shuffleParts(words: string[]) {
     var a = words;
-    let n = 256;
+    let n = words.length;
 
     for (var i = n - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
@@ -50,6 +50,9 @@ function App() {
     console.clear();
 
     let secret = generateKey();
+
+    secret = secret.sort((a, b) => parseInt(a) - parseInt(b));
+
     console.log("Secret :", secret, "\n\n");
     console.log("Plane Text", txt);
     txt = textToBinary(txt).split(" ").join("");
@@ -88,6 +91,8 @@ function App() {
 
     for (let i = 0; i < secret.length; i++) {
       intstr = addStr(intstr, parseInt(secret[i]), txt[i]);
+
+      console.log(intstr[parseInt(secret[i]) + 1], secret[i], txt[i]);
     }
 
     console.log("Binary Text", intstr);
@@ -99,9 +104,31 @@ function App() {
 
     intstr = binaryToText(intstr);
 
-    console.log("Binary To Text");
+    console.log("Binary To Chars", intstr);
 
     setEnc(intstr);
+
+    decrypt(intstr, secret);
+  }
+
+  function decrypt(str: string, secret: any) {
+    str = textToBinary(str).split(" ").join("");
+    console.log("Str", str);
+
+    let decryptedText = "";
+    for (let i = 0; i < secret.length; i++) {
+      decryptedText += str[parseInt(secret[i])];
+
+      console.log(secret[i], str[parseInt(secret[i])]);
+    }
+
+    console.log("\n\nDecrypted Text\n\n", decryptedText);
+
+    decryptedText = (decryptedText.match(/.{1,8}/g) || []).join(" ").trim();
+
+    decryptedText = binaryToText(decryptedText).trim();
+
+    console.log("\n\nDecrypted Text\n\n", decryptedText);
   }
 
   function generateKey() {
@@ -109,7 +136,9 @@ function App() {
 
     let key = shuffleParts(numbers.numbers.toString().split(","));
 
-    let encDecKey = key.split(",");
+    let encDecKey = key.split(",").splice(0, 256);
+
+    console.log(encDecKey);
 
     return encDecKey;
   }
