@@ -68,6 +68,8 @@ function App() {
 
     // console.log("Plane Text", txt);
 
+    someTxt = shuffle(someTxt);
+
     let intstr = "";
 
     for (let i = 0; i < someTxt.length; i++) {
