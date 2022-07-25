@@ -49,6 +49,8 @@ function App() {
   function encrypt(txt: string) {
     console.clear();
 
+    setPlane(txt);
+
     txt += " " + padding(txt.length.toString(), 2);
 
     txt = padding(txt, 32, " ");
@@ -157,6 +159,8 @@ function App() {
     console.log(decryptedText);
     console.log("Plane Text Length ", decryptedText.length);
     console.log("Spaces Length ", spacesCount);
+
+    setDec(decryptedText);
   }
 
   function generateKey() {
@@ -282,14 +286,19 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
+        Plane Text : <br />
+        <br /> <div>{plnTxt}</div>
+        Length : {plnTxt.length}
         <br />
         <br />
-        <div>{plnTxt}</div>
-        <br />
-        <br />
+        Encrypted Text : <br /> <br />{" "}
         <div style={{ wordBreak: "break-all" }}>{encTxt}</div>
-        <br />
         Length : {encTxt.length}
+        <br />
+        <br />
+        Decrypted Text : <br /> <br />{" "}
+        <div style={{ wordBreak: "break-all" }}>{decTxt}</div>
+        Length : {decTxt.length}
         <br />
         <br />
       </header>
