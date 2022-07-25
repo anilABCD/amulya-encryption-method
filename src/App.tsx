@@ -36,7 +36,7 @@ function App() {
   }
 
   useEffect(() => {
-    encrypt("amulya anil kumar potlapally    ");
+    encrypt("       amulya");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -49,18 +49,24 @@ function App() {
   function encrypt(txt: string) {
     console.clear();
 
+    txt += " " + padding(txt.length.toString(), 2);
+
+    txt = padding(txt, 32, " ");
+
+    console.log("\n\nPlane Text\n\n", txt);
+
     let secret = generateKey();
 
     secret = secret.sort((a, b) => parseInt(a) - parseInt(b));
 
-    console.log("Secret :", secret, "\n\n");
-    console.log("Plane Text", txt);
+    // console.log("Secret :", secret, "\n\n");
+    // console.log("Plane Text", txt);
     txt = textToBinary(txt).split(" ").join("");
 
     let someTxt =
       "! \"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-    console.log("Plane Text", txt);
+    // console.log("Plane Text", txt);
 
     let intstr = "";
 
@@ -68,11 +74,11 @@ function App() {
       intstr += padding(someTxt[i].charCodeAt(0).toString(), 3);
     }
 
-    console.log("Int Text", intstr);
+    // console.log("Int Text", intstr);
 
     intstr = textToBinary(intstr);
 
-    console.log("Binary Text", intstr);
+    // console.log("Binary Text", intstr);
 
     intstr = intstr.split(" ").join("");
 
@@ -92,68 +98,96 @@ function App() {
     for (let i = 0; i < secret.length; i++) {
       intstr = addStr(intstr, parseInt(secret[i]), txt[i]);
 
-      console.log(intstr[parseInt(secret[i]) + 1], secret[i], txt[i]);
+      // console.log(intstr[parseInt(secret[i]) + 1], secret[i], txt[i]);
     }
 
-    console.log("Binary Text", intstr);
-    console.log("Binary Length", intstr.length);
+    // console.log("Binary Text", intstr);
+    // console.log("Binary Length", intstr.length);
 
     intstr = (intstr.match(/.{1,8}/g) || []).join(" ");
 
-    console.log("Binary Text", intstr);
+    // console.log("Binary Text", intstr);
 
     intstr = binaryToText(intstr);
 
-    console.log("Binary To Chars", intstr);
+    // console.log("Binary To Chars", intstr);
 
     setEnc(intstr);
+
+    console.log("\n\nEncrypted Text : \n\n", intstr);
 
     decrypt(intstr, secret);
   }
 
   function decrypt(str: string, secret: any) {
     str = textToBinary(str).split(" ").join("");
-    console.log("Str", str);
+    // console.log("Str", str);
 
     let decryptedText = "";
     for (let i = 0; i < secret.length; i++) {
       decryptedText += str[parseInt(secret[i])];
 
-      console.log(secret[i], str[parseInt(secret[i])]);
+      // console.log(secret[i], str[parseInt(secret[i])]);
     }
 
-    console.log("\n\nDecrypted Text\n\n", decryptedText);
+    // console.log("\n\nDecrypted Text\n\n", decryptedText);
 
     decryptedText = (decryptedText.match(/.{1,8}/g) || []).join(" ").trim();
 
-    decryptedText = binaryToText(decryptedText).trim();
+    decryptedText = binaryToText(decryptedText);
 
-    console.log("\n\nDecrypted Text\n\n", decryptedText);
+    let indexOflength = decryptedText.lastIndexOf(" ");
+
+    let planeTextOriginalLength = parseInt(
+      decryptedText[indexOflength + 1] + decryptedText[indexOflength + 2]
+    );
+
+    decryptedText = decryptedText.substring(0, indexOflength);
+    if (planeTextOriginalLength > 0) {
+      decryptedText = reverse(decryptedText);
+      decryptedText = decryptedText.substring(0, planeTextOriginalLength);
+      decryptedText = reverse(decryptedText);
+    }
+
+    const spacesCount = decryptedText.split(" ").length - 1;
+
+    console.log("\n\nDecrypted Text\n\n");
+    console.log(decryptedText);
+    console.log("Plane Text Length ", decryptedText.length);
+    console.log("Spaces Length ", spacesCount);
   }
 
   function generateKey() {
-    console.log("shuffle parts");
+    // console.log("shuffle parts");
 
     let key = shuffleParts(numbers.numbers.toString().split(","));
 
-    let encDecKey = key.split(",").splice(0, 256);
+    let encDecKey = key.split(",").splice(0, 280);
 
-    console.log(encDecKey);
+    // console.log(encDecKey);
 
     return encDecKey;
   }
 
-  function unRotateEncryptionText(encryptedText: string) {
-    console.log("Secret Rotator :");
-
-    for (let i = 0; i < 10; i++) {
-      encryptedText = unshift(encryptedText);
+  function reverse(str: string) {
+    let reversed = "";
+    for (var i = str.length - 1; i >= 0; i--) {
+      reversed += str[i];
     }
-    return encryptedText;
+    return reversed;
   }
 
+  // function unRotateEncryptionText(encryptedText: string) {
+  //   // console.log("Secret Rotator :");
+
+  //   for (let i = 0; i < 10; i++) {
+  //     encryptedText = unshift(encryptedText);
+  //   }
+  //   return encryptedText;
+  // }
+
   function rotateEncryptionText(encryptedText: string) {
-    console.log("Secret Rotator :");
+    // console.log("Secret Rotator :");
 
     for (let i = 0; i < 10; i++) {
       encryptedText = shift(encryptedText);
