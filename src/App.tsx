@@ -53,9 +53,11 @@ function App() {
 
     txt += " " + padding(txt.length.toString(), 2);
 
-    txt = padding(txt, 32, " ");
+    // 35 because above 1 space and 2 length chars .
+    // total 32 + 1 + 2 = 35
+    txt = padding(txt, 35, " ");
 
-    console.log("\n\nPlane Text\n\n", txt);
+    console.log("\n\nPlane Text\n\n", txt, txt.length.toString());
 
     let secret = generateKey();
 
@@ -68,7 +70,7 @@ function App() {
     let someTxt =
       "! \"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-    // console.log("Plane Text", txt);
+    // console.log("Binary Plane Text", txt);
 
     someTxt = shuffle(someTxt);
 
@@ -92,8 +94,11 @@ function App() {
 
     intstr = intstr
       .split(" ")
-      .map((ele) => {
-        return (ele = paddingRandom(ele, 8));
+      .map((ele, index) => {
+        if (index > 1) return (ele = paddingRandom(ele, 8));
+        else {
+          return ele;
+        }
       })
       .join("");
 
@@ -125,7 +130,8 @@ function App() {
 
   function decrypt(str: string, secret: any) {
     str = textToBinary(str).split(" ").join("");
-    // console.log("Str", str);
+
+    // console.log("decrupt Binary", str);
 
     let decryptedText = "";
     for (let i = 0; i < secret.length; i++) {
@@ -142,6 +148,8 @@ function App() {
 
     let indexOflength = decryptedText.lastIndexOf(" ");
 
+    // console.log(indexOflength, decryptedText);
+
     let planeTextOriginalLength = parseInt(
       decryptedText[indexOflength + 1] + decryptedText[indexOflength + 2]
     );
@@ -153,10 +161,12 @@ function App() {
       decryptedText = reverse(decryptedText);
     }
 
+    // console.log(planeTextOriginalLength);
+
     const spacesCount = decryptedText.split(" ").length - 1;
 
     console.log("\n\nDecrypted Text\n\n");
-    console.log(decryptedText);
+    console.log("\n\n" + decryptedText + "\n\n\n");
     console.log("Plane Text Length ", decryptedText.length);
     console.log("Spaces Length ", spacesCount);
 
