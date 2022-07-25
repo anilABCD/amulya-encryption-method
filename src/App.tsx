@@ -36,7 +36,7 @@ function App() {
   }
 
   useEffect(() => {
-    encrypt("       amulya");
+    encrypt("            amulya");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -51,13 +51,19 @@ function App() {
 
     setPlane(txt);
 
+    console.log("\n\nPlane Text\n\n\n", txt, "\n\n");
+
     txt += " " + padding(txt.length.toString(), 2);
 
     // 35 because above 1 space and 2 length chars .
     // total 32 + 1 + 2 = 35
     txt = padding(txt, 35, " ");
 
-    console.log("\n\nPlane Text\n\n", txt, txt.length.toString());
+    // IMPORTANT: dont delete this .
+    // console.log(
+    //   "\nLength for padding to use is compulsory ",
+    //   35, " or " , " based on max char and 1 space and 2 length or n length you choose for . "
+    // );
 
     let secret = generateKey();
 
