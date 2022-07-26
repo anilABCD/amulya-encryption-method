@@ -46,19 +46,6 @@ function App() {
     );
   }
 
-  // function getRandomNumber(min: number, max: number) {
-  //   // all readable chars ... in ascii table ... their respective integers ...
-
-  //   let value = Math.floor(Math.random() * (max - min) + min);
-
-  //   let randomChar = padding(value.toString(), 4);
-
-  //   return randomChar;
-  // }
-
-  // const minRandomeNumber = 25;
-  // const maxRandomeNumber = 4000;
-
   function encrypt(planeText: string) {
     console.clear();
 
@@ -81,8 +68,7 @@ function App() {
     // );
 
     let someRandomText =
-      "! \"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
+      "! \"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890";
     const planeTextMaxLenght = 35;
     let key = generateKey(planeTextMaxLenght);
 
@@ -95,7 +81,7 @@ function App() {
     let encText = "";
 
     for (let i = 0; i < someRandomText.length; i++) {
-      encText += padding(someRandomText[i].charCodeAt(0).toString(), 3);
+      encText += someRandomText[i].charCodeAt(0).toString();
     }
 
     console.log(encText.length);
@@ -135,31 +121,6 @@ function App() {
 
     setDec(decryptedText);
   }
-
-  // function extractRandomeNumberToRotate(str: string, secret: string[]) {
-  //   str = textToBinary(str).split(" ").join("");
-
-  //   // console.log("decrupt Binary", str);
-
-  //   let decryptedText = "";
-  //   for (let i = 0; i < secret.length; i++) {
-  //     decryptedText += str[parseInt(secret[i])];
-
-  //     // console.log(secret[i], str[parseInt(secret[i])]);
-  //   }
-
-  //   // console.log("\n\nDecrypted Text\n\n", decryptedText);
-
-  //   decryptedText = (decryptedText.match(/.{1,8}/g) || []).join(" ").trim();
-
-  //   // decryptedText = binaryToText(decryptedText);
-
-  //   console.log("\n\nDecrypted Text\n\n");
-  //   console.log("\n\n" + decryptedText + "\n\n\n");
-  //   console.log("Plane Text Length ", decryptedText.length);
-
-  //   return decryptedText;
-  // }
 
   function extractPlaneTextFromEnc(str: string, secret: string[]) {
     // console.log("decrupt Binary", str);
