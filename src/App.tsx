@@ -346,13 +346,13 @@ function App() {
     return encDecKey;
   }
 
-  function reverse(str: string) {
-    let reversed = "";
-    for (var i = str.length - 1; i >= 0; i--) {
-      reversed += str[i];
-    }
-    return reversed;
-  }
+  // function reverse(str: string) {
+  //   let reversed = "";
+  //   for (var i = str.length - 1; i >= 0; i--) {
+  //     reversed += str[i];
+  //   }
+  //   return reversed;
+  // }
 
   function unRotateEncryptionText(encryptedText: string, rotations: number) {
     for (let i = 0; i < rotations; i++) {
