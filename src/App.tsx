@@ -76,6 +76,10 @@ function App() {
 
     let secret = key.secretKey.sort((a, b) => parseInt(a) - parseInt(b));
 
+    let secretXorKey = key.secretXorKey.join("");
+
+    secretXorKey = textToBinary(secretXorKey).split(" ").join("");
+
     someRandomText = shuffle(someRandomText);
 
     let encText = "";
@@ -94,7 +98,18 @@ function App() {
 
     encText = addTextToEncrypt(encText, planeText, secret).join("");
 
+    // console.log("Secret XOR ");
+    // console.log("\n" + secretXorKey.length + "\n");
+
+    encText = xorEntireBinary(encText, secretXorKey);
+
+    // console.log("After XOR ");
+    // console.log("\n" + encText + "\n");
+
     encText = rotateEncryptionText(encText, key.rotations);
+
+    // console.log("After Rotate ");
+    // console.log("\n" + encText + "\n");
 
     encText = (encText.match(/.{1,8}/g) || []).join(" ");
 
@@ -102,10 +117,15 @@ function App() {
 
     setEnc(encText);
 
-    decrypt(encText, secret, key);
+    decrypt(encText, secret, key, secretXorKey);
   }
 
-  function decrypt(str: string, secret: string[], key: any) {
+  function decrypt(
+    str: string,
+    secret: string[],
+    key: any,
+    secretXorKey: string
+  ) {
     let rotations = key.rotations;
 
     let decryptedText = unRotateEncryptionText(
@@ -113,11 +133,17 @@ function App() {
       rotations
     );
 
+    // console.log("After Un Rotate ");
+    // console.log("\n" + decryptedText + "\n");
+
+    decryptedText = xorEntireBinary(decryptedText, secretXorKey);
+
+    // console.log("After XOR ");
     // console.log(decryptedText);
 
     decryptedText = extractPlaneTextFromEnc(decryptedText, secret);
 
-    console.log("Binary Decrupted after unrotation", decryptedText);
+    // console.log("Binary Decrupted after unrotation", decryptedText);
 
     setDec(decryptedText);
   }
@@ -214,13 +240,44 @@ function App() {
     return resultEnc;
   }
 
+  function xorEntireBinary(txt: string, xorSecret: string) {
+    let b1 = txt;
+
+    let charResult = "";
+    let xorIndex = 0;
+    for (let i = 0; i < b1.length; i++) {
+      if (xorIndex > xorSecret.length - 1) {
+        xorIndex = 0;
+      }
+
+      if (b1[i] === "0" && xorSecret[xorIndex] === "0") {
+        charResult += "0";
+      } else if (b1[i] === "0" && xorSecret[xorIndex] === "1") {
+        charResult += "1";
+      } else if (b1[i] === "1" && xorSecret[xorIndex] === "0") {
+        charResult += "1";
+      } else if (b1[i] === "1" && xorSecret[xorIndex] === "1") {
+        charResult += "0";
+      }
+
+      xorIndex++;
+    }
+
+    return charResult;
+  }
+
   function generateKey(planeTextMaxLength: number) {
     let key = shuffleParts(numbers.numbers.toString().split(","));
 
     const secretKey = key.split(",").splice(0, planeTextMaxLength * 8);
 
+    let key2 = shuffleParts(numbers.numbers.toString().split(","));
+
+    const secretXorKey = key2.split(",").splice(0, planeTextMaxLength * 8);
+
     let encDecKey = {
       secretKey: secretKey,
+      secretXorKey: secretXorKey,
       rotations: 2556,
     };
 
