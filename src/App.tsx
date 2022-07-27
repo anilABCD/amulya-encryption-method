@@ -36,7 +36,7 @@ function App() {
   }
 
   useEffect(() => {
-    encrypt("Prakash Ramya Krishnan@Sarojini");
+    encrypt("Prakash Ramya Krishnan @Sarojini");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
