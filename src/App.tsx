@@ -51,7 +51,7 @@ function App() {
 
     setPlane(planeText);
 
-    console.log("\n\nPlane Text\n\n\n", planeText.length, "\n\n");
+    // console.log("\n\nPlane Text\n\n\n", planeText.length, "\n\n");
 
     planeText += "@" + padding(planeText.length.toString(), 2);
 
@@ -70,15 +70,8 @@ function App() {
     let someRandomText =
       "! \"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890";
     const planeTextMaxLenght = 35;
-    let key = generateKey(planeTextMaxLenght);
 
-    console.log("someRandomText  ", someRandomText.length);
-
-    let secret = key.secretKey.sort((a, b) => parseInt(a) - parseInt(b));
-
-    let secretXorKey = key.secretXorKey.join("");
-
-    secretXorKey = textToBinary(secretXorKey).split(" ").join("");
+    // console.log("someRandomText  ", someRandomText.length);
 
     someRandomText = shuffle(someRandomText);
 
@@ -88,28 +81,27 @@ function App() {
       encText += someRandomText[i].charCodeAt(0).toString();
     }
 
-    console.log(encText.length);
+    // console.log(encText.length);
 
     encText = textToBinary(encText);
 
-    // console.log(encText, encText.length);
-
     encText = randomizeEntireData(encText).join(" ");
 
-    encText = addTextToEncrypt(encText, planeText, secret).join("");
+    let key = generateKey(planeTextMaxLenght);
 
-    // console.log("Secret XOR ");
-    // console.log("\n" + secretXorKey.length + "\n");
+    encText = addTextToEncrypt(encText, planeText, key[0].secretKey).join("");
 
-    encText = xorEntireBinary(encText, secretXorKey);
+    for (let i = 0; i < key.length; i++) {
+      let secretXorKey = key[i].secretXorKey;
 
-    // console.log("After XOR ");
-    // console.log("\n" + encText + "\n");
-
-    encText = rotateEncryptionText(encText, key.rotations);
-
-    // console.log("After Rotate ");
-    // console.log("\n" + encText + "\n");
+      // console.log(key[i].rotations);
+      // console.log("BEFORE XOR", encText.substring(0, 10));
+      encText = xorEntireBinary(encText, secretXorKey);
+      // console.log("AFTER XOR", encText.substring(0, 10));
+      // console.log("BEFORE", encText.substring(0, 10));
+      encText = rotateEncryptionText(encText, key[i].rotations);
+      // console.log("AFTER", encText.substring(0, 10));
+    }
 
     encText = (encText.match(/.{1,8}/g) || []).join(" ");
 
@@ -117,33 +109,27 @@ function App() {
 
     setEnc(encText);
 
-    decrypt(encText, secret, key, secretXorKey);
+    decrypt(encText, key);
   }
 
-  function decrypt(
-    str: string,
-    secret: string[],
-    key: any,
-    secretXorKey: string
-  ) {
-    let rotations = key.rotations;
+  function decrypt(str: string, key: encDecType[]) {
+    let decryptedText = "";
+    let secret: string[] = key[0].secretKey;
 
-    let decryptedText = unRotateEncryptionText(
-      textToBinary(str).split(" ").join(""),
-      rotations
-    );
-
-    // console.log("After Un Rotate ");
-    // console.log("\n" + decryptedText + "\n");
-
-    decryptedText = xorEntireBinary(decryptedText, secretXorKey);
-
-    // console.log("After XOR ");
-    // console.log(decryptedText);
+    decryptedText = textToBinary(str).split(" ").join("");
+    for (let i = key.length - 1; i >= 0; i--) {
+      let rotations = key[i].rotations;
+      let secretXorKey = key[i].secretXorKey;
+      // console.log("BEFORE", decryptedText.substring(0, 10));
+      decryptedText = unRotateEncryptionText(decryptedText, rotations);
+      // console.log("AFTER", decryptedText.substring(0, 10));
+      // console.log("BEFORE XOR", decryptedText.substring(0, 10));
+      decryptedText = xorEntireBinary(decryptedText, secretXorKey);
+      // console.log("AFTER XOR", decryptedText.substring(0, 10));
+      // console.log(rotations);
+    }
 
     decryptedText = extractPlaneTextFromEnc(decryptedText, secret);
-
-    // console.log("Binary Decrupted after unrotation", decryptedText);
 
     setDec(decryptedText);
   }
@@ -176,7 +162,7 @@ function App() {
     //   decryptedText[indexOflength + 6] +
     //   decryptedText[indexOflength + 7];
 
-    console.log("\n\nRplaneTextOriginalLength : " + planeTextOriginalLength);
+    // console.log("\n\nRplaneTextOriginalLength : " + planeTextOriginalLength);
 
     decryptedText = decryptedText.substring(0, indexOflength);
     if (planeTextOriginalLength > 0) {
@@ -266,20 +252,47 @@ function App() {
     return charResult;
   }
 
+  type encDecType = {
+    secretKey: string[];
+    secretXorKey: string;
+    rotations: number;
+  };
+
   function generateKey(planeTextMaxLength: number) {
-    let key = shuffleParts(numbers.numbers.toString().split(","));
+    let encDecKey: encDecType[] = [];
 
-    const secretKey = key.split(",").splice(0, planeTextMaxLength * 8);
+    for (let i = 0; i < 2; i++) {
+      let key = shuffleParts(numbers.numbers.toString().split(","));
 
-    let key2 = shuffleParts(numbers.numbers.toString().split(","));
+      const secretKey = key
+        .split(",")
+        .splice(0, planeTextMaxLength * 8)
+        .sort((a, b) => parseInt(a) - parseInt(b));
 
-    const secretXorKey = key2.split(",").splice(0, planeTextMaxLength * 8);
+      let key2 = shuffleParts(numbers.numbers.toString().split(","));
 
-    let encDecKey = {
-      secretKey: secretKey,
-      secretXorKey: secretXorKey,
-      rotations: 2556,
-    };
+      const secretXorKey = textToBinary(
+        key2
+          .split(",")
+          .splice(0, planeTextMaxLength * 8)
+          .sort((a, b) => parseInt(a) - parseInt(b))
+          .join("")
+      )
+        .split(" ")
+        .join("");
+
+      const min = 2000;
+      const max = 5000;
+      let rotations = Math.floor(Math.random() * (max - min) + min);
+
+      let genKey: encDecType = {
+        secretKey: secretKey,
+        secretXorKey: secretXorKey,
+        rotations: rotations,
+      };
+
+      encDecKey.push(genKey);
+    }
 
     console.log("\n", encDecKey, "\n\n");
 
@@ -295,23 +308,13 @@ function App() {
   }
 
   function unRotateEncryptionText(encryptedText: string, rotations: number) {
-    // console.log("Secret Rotator :");
-
     for (let i = 0; i < rotations; i++) {
       encryptedText = unshift(encryptedText);
     }
     return encryptedText;
   }
 
-  function rotateEncryptionText(encryptedText: string, rotations: number = 25) {
-    // console.log("Secret Rotator :");
-
-    // console.log("rotations original", rotations);
-
-    // rotations = Math.floor(rotations / 8);
-
-    // console.log("rotations", rotations);
-
+  function rotateEncryptionText(encryptedText: string, rotations: number) {
     for (let i = 0; i < rotations; i++) {
       encryptedText = shift(encryptedText);
     }
