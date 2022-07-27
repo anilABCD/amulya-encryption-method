@@ -36,7 +36,7 @@ function App() {
   }
 
   useEffect(() => {
-    encrypt("Ramya Krishnan @ Sarojini");
+    encrypt("Prakash Ramya Krishnan@Sarojini");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -71,7 +71,9 @@ function App() {
       // 1 extracter adds 7 more letters because of randomizeEntireData(); function .
       "anshika-kajal-amulya-lion";
 
-    // Extra 1 is for starting char ...
+    // IMPORTANT: Extra 1 char info ...
+    // Extra 1 is for starting char ... identifying starting character ...
+    // so we can remove any extra characters , which are padding zeros ...
     const planeTextMaxLenght = 32 + 1;
 
     someRandomText = shuffle(someRandomText);
@@ -88,24 +90,26 @@ function App() {
 
     encText = randomizeEntireData(encText).join(" ");
 
-    let key = generateKey(planeTextMaxLenght);
+    let generatedKey = generateKey(planeTextMaxLenght);
+
+    const encDecKey = generatedKey.encDecKey;
 
     encText = addTextToEncrypt(
       encText,
       planeText,
-      key[0].secretKey,
-      planeTextMaxLenght
+      planeTextMaxLenght,
+      generatedKey
     ).join("");
 
-    for (let i = 0; i < key.length; i++) {
-      let secretXorKey = key[i].secretXorKey;
+    for (let i = 0; i < encDecKey.length; i++) {
+      let secretXorKey = encDecKey[i].secretXorKey;
 
       // console.log(key[i].rotations);
       // console.log("BEFORE XOR", encText.substring(0, 10));
       encText = xorEntireBinary(encText, secretXorKey);
       // console.log("AFTER XOR", encText.substring(0, 10));
       // console.log("BEFORE", encText.substring(0, 10));
-      encText = rotateEncryptionText(encText, key[i].rotations);
+      encText = rotateEncryptionText(encText, encDecKey[i].rotations);
       // console.log("AFTER", encText.substring(0, 10));
     }
 
@@ -115,17 +119,18 @@ function App() {
 
     setEnc(encText);
 
-    decrypt(encText, key);
+    decrypt(encText, generatedKey);
   }
 
-  function decrypt(str: string, key: encDecType[]) {
+  function decrypt(str: string, generatedKey: GeneratedKeyType) {
     let decryptedText = "";
-    let secret: string[] = key[0].secretKey;
+    const encDecKey = generatedKey.encDecKey;
+    let secret: string[] = generatedKey.encDecKey[0].secretKey;
 
     decryptedText = textToBinary(str).split(" ").join("");
-    for (let i = key.length - 1; i >= 0; i--) {
-      let rotations = key[i].rotations;
-      let secretXorKey = key[i].secretXorKey;
+    for (let i = encDecKey.length - 1; i >= 0; i--) {
+      let rotations = encDecKey[i].rotations;
+      let secretXorKey = encDecKey[i].secretXorKey;
       // console.log("BEFORE", decryptedText.substring(0, 10));
       decryptedText = unRotateEncryptionText(decryptedText, rotations);
       // console.log("AFTER", decryptedText.substring(0, 10));
@@ -135,12 +140,20 @@ function App() {
       // console.log(rotations);
     }
 
-    decryptedText = extractPlaneTextFromEnc(decryptedText, secret);
+    decryptedText = extractPlaneTextFromEnc(
+      decryptedText,
+      secret,
+      generatedKey
+    );
 
     setDec(decryptedText);
   }
 
-  function extractPlaneTextFromEnc(str: string, secret: string[]) {
+  function extractPlaneTextFromEnc(
+    str: string,
+    secret: string[],
+    generatedKey: GeneratedKeyType
+  ) {
     // console.log("decrupt Binary", str);
 
     let decryptedText = "";
@@ -148,7 +161,7 @@ function App() {
       decryptedText += str[parseInt(secret[i])];
     }
 
-    console.log("decryptedText", decryptedText, secret.length);
+    // console.log("decryptedText", decryptedText, secret.length);
 
     const decryptArray = (decryptedText.match(/.{1,8}/g) || [])
       .join(" ")
@@ -158,8 +171,8 @@ function App() {
     // console.log("To Remove 0 from Decrypting Text Array ", decTextBinArray);
 
     for (let i = 0; i < decryptArray.length; i++) {
-      console.log(decryptArray[i]);
-      if (decryptArray[i] === "00110001") {
+      // console.log(decryptArray[i]);
+      if (decryptArray[i] === textToBinary(generatedKey.startingChar)) {
         removingIndex = i;
         break;
       }
@@ -172,14 +185,14 @@ function App() {
       decryptedText = decryptedText.substring(removingIndex);
     }
 
-    console.log("removingIndex", removingIndex);
+    // console.log("removingIndex", removingIndex);
 
     decryptedText = (decryptedText.match(/.{1,8}/g) || []).join(" ").trim();
 
-    console.log("Decrypted Binary Text ", decryptedText);
+    // console.log("Decrypted Binary Text ", decryptedText);
     decryptedText = binaryToText(decryptedText);
 
-    console.log("Original Text", removingIndex, decryptedText);
+    // console.log("Original Text", removingIndex, decryptedText);
 
     // let indexOflength = decryptedText.lastIndexOf("@");
 
@@ -219,10 +232,12 @@ function App() {
   function addTextToEncrypt(
     encText: string,
     txt: string,
-    secret: string[],
-    planeTextMaxLenght: number
+    planeTextMaxLenght: number,
+    generatedKey: GeneratedKeyType
   ) {
     // console.log("Int Text", intstr);
+
+    const secretKey = generatedKey.encDecKey[0].secretKey;
 
     planeTextMaxLenght = planeTextMaxLenght * 8;
 
@@ -231,13 +246,13 @@ function App() {
     // extra 1 is a starting bit ... prepended at starting .
     // "1" + textToBinary(txt).split(" ").join(""),
     txt = padding(
-      textToBinary("1" + txt)
+      textToBinary(generatedKey.startingChar + txt)
         .split(" ")
         .join(""),
       planeTextMaxLenght
     );
 
-    console.log("Binary Plane Text", txt);
+    // console.log("Binary Plane Text", txt);
 
     newEncText = newEncText.split(" ").join("");
 
@@ -249,8 +264,8 @@ function App() {
 
     // console.log("Binary Text newEncText", secret.length);
 
-    for (let i = 0; i < secret.length; i++) {
-      newEncText = addStr(newEncText, parseInt(secret[i]), txt[i]);
+    for (let i = 0; i < secretKey.length; i++) {
+      newEncText = addStr(newEncText, parseInt(secretKey[i]), txt[i]);
 
       // console.log(intstr[parseInt(secret[i]) + 1], secret[i], txt[i]);
     }
@@ -299,6 +314,23 @@ function App() {
     return charResult;
   }
 
+  function getRandomChars() {
+    // all readable chars ... in ascii table ... their respective integers ...
+    const min = 32;
+    const max = 126;
+
+    let value = Math.floor(Math.random() * (max - min) + min);
+
+    let randomChar = String.fromCharCode(value);
+
+    return randomChar;
+  }
+
+  type GeneratedKeyType = {
+    encDecKey: encDecType[];
+    startingChar: string;
+  };
+
   type encDecType = {
     secretKey: string[];
     secretXorKey: string;
@@ -306,7 +338,12 @@ function App() {
   };
 
   function generateKey(planeTextMaxLength: number) {
-    let encDecKey: encDecType[] = [];
+    let secretStartingCharGenerated: string = getRandomChars();
+
+    let generatedKey: GeneratedKeyType = {
+      encDecKey: [],
+      startingChar: secretStartingCharGenerated,
+    };
 
     for (let i = 0; i < 2; i++) {
       let key = shuffleParts(numbers.numbers.toString().split(","));
@@ -338,12 +375,12 @@ function App() {
         rotations: rotations,
       };
 
-      encDecKey.push(genKey);
+      generatedKey.encDecKey.push(genKey);
     }
 
-    console.log("\n", encDecKey, "\n\n");
+    console.log("\n", generatedKey, "\n\n");
 
-    return encDecKey;
+    return generatedKey;
   }
 
   // function reverse(str: string) {
