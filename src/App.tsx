@@ -36,7 +36,7 @@ function App() {
   }
 
   useEffect(() => {
-    encrypt("anil kumar potlapally");
+    encrypt("anil kumar potlapally anil kumar");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -61,14 +61,18 @@ function App() {
     // total 32 + 1 + 2 = 35
     planeText = padding(planeText, 35, " ");
 
-    // IMPORTANT: dont delete this .
+    // IMPORTANT: dont delete this below comment.
     // console.log(
     //   "\nLength for padding to use is compulsory ",
     //   35, " or " , " based on max char and 1 space and 2 length or n length you choose for . "
     // );
 
+    // IMPORTANT: min 11 letters to produce : 128 chars by randomizeEntireData();
     let someRandomText =
-      "! \"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890";
+      // "! \"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890";
+      // IMPORTANT: Min 11 letters to produce : 128 chars by randomizeEntireData();
+      // 1 extracter adds 7 more letters because of randomizeEntireData(); function .
+      "anshika-kajal-amulya-lion";
     const planeTextMaxLenght = 35;
 
     // console.log("someRandomText  ", someRandomText.length);
