@@ -36,7 +36,7 @@ function App() {
   }
 
   useEffect(() => {
-    encrypt("anil kumar potlapally anil kumar");
+    encrypt("! \"#$%&'()*+,-./:;<=>?@[\\]^anilk");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -51,15 +51,12 @@ function App() {
 
     setPlane(planeText);
 
-    // console.log("\n\nPlane Text\n\n\n", planeText.length, "\n\n");
-
-    planeText += "@" + padding(planeText.length.toString(), 2);
+    console.log("\n\nPlane Text\n\n\n", planeText.length, "\n\n");
 
     console.log(planeText);
 
     // 35 because above 1 space and 2 length chars .
     // total 32 + 1 + 2 = 35
-    planeText = padding(planeText, 35, " ");
 
     // IMPORTANT: dont delete this below comment.
     // console.log(
@@ -73,9 +70,9 @@ function App() {
       // IMPORTANT: Min 11 letters to produce : 128 chars by randomizeEntireData();
       // 1 extracter adds 7 more letters because of randomizeEntireData(); function .
       "anshika-kajal-amulya-lion";
-    const planeTextMaxLenght = 35;
 
-    // console.log("someRandomText  ", someRandomText.length);
+    // Extra 1 is for starting char ...
+    const planeTextMaxLenght = 32 + 1;
 
     someRandomText = shuffle(someRandomText);
 
@@ -93,7 +90,12 @@ function App() {
 
     let key = generateKey(planeTextMaxLenght);
 
-    encText = addTextToEncrypt(encText, planeText, key[0].secretKey).join("");
+    encText = addTextToEncrypt(
+      encText,
+      planeText,
+      key[0].secretKey,
+      planeTextMaxLenght
+    ).join("");
 
     for (let i = 0; i < key.length; i++) {
       let secretXorKey = key[i].secretXorKey;
@@ -146,36 +148,63 @@ function App() {
       decryptedText += str[parseInt(secret[i])];
     }
 
-    decryptedText = (decryptedText.match(/.{1,8}/g) || []).join(" ").trim();
-    // console.log(decryptedText);
-    decryptedText = binaryToText(decryptedText);
+    console.log("decryptedText", decryptedText, secret.length);
 
-    console.log("Original Text", decryptedText);
+    const decryptArray = (decryptedText.match(/.{1,8}/g) || [])
+      .join(" ")
+      .split(" ");
 
-    let indexOflength = decryptedText.lastIndexOf("@");
+    let removingIndex = -1;
+    // console.log("To Remove 0 from Decrypting Text Array ", decTextBinArray);
 
-    // console.log(indexOflength, decryptedText);
-
-    let planeTextOriginalLength = parseInt(
-      decryptedText[indexOflength + 1] + decryptedText[indexOflength + 2]
-    );
-
-    // let randomRotationNumber =
-    //   decryptedText[indexOflength + 4] +
-    //   decryptedText[indexOflength + 5] +
-    //   decryptedText[indexOflength + 6] +
-    //   decryptedText[indexOflength + 7];
-
-    // console.log("\n\nRplaneTextOriginalLength : " + planeTextOriginalLength);
-
-    decryptedText = decryptedText.substring(0, indexOflength);
-    if (planeTextOriginalLength > 0) {
-      decryptedText = reverse(decryptedText);
-      decryptedText = decryptedText.substring(0, planeTextOriginalLength);
-      decryptedText = reverse(decryptedText);
+    for (let i = 0; i < decryptArray.length; i++) {
+      console.log(decryptArray[i]);
+      if (decryptArray[i] === "00110001") {
+        removingIndex = i;
+        break;
+      }
     }
 
-    console.log(planeTextOriginalLength);
+    // console.log("Removing From Index", removingIndex);
+
+    if (removingIndex > -1) {
+      removingIndex = (removingIndex + 1) * 8;
+      decryptedText = decryptedText.substring(removingIndex);
+    }
+
+    console.log("removingIndex", removingIndex);
+
+    decryptedText = (decryptedText.match(/.{1,8}/g) || []).join(" ").trim();
+
+    console.log("Decrypted Binary Text ", decryptedText);
+    decryptedText = binaryToText(decryptedText);
+
+    console.log("Original Text", removingIndex, decryptedText);
+
+    // let indexOflength = decryptedText.lastIndexOf("@");
+
+    // // console.log(indexOflength, decryptedText);
+
+    // let planeTextOriginalLength = parseInt(
+    //   decryptedText[indexOflength + 1] + decryptedText[indexOflength + 2]
+    // );
+
+    // // let randomRotationNumber =
+    // //   decryptedText[indexOflength + 4] +
+    // //   decryptedText[indexOflength + 5] +
+    // //   decryptedText[indexOflength + 6] +
+    // //   decryptedText[indexOflength + 7];
+
+    // // console.log("\n\nRplaneTextOriginalLength : " + planeTextOriginalLength);
+
+    // decryptedText = decryptedText.substring(0, indexOflength);
+    // if (planeTextOriginalLength > 0) {
+    //   decryptedText = reverse(decryptedText);
+    //   decryptedText = decryptedText.substring(0, planeTextOriginalLength);
+    //   decryptedText = reverse(decryptedText);
+    // }
+
+    // console.log(planeTextOriginalLength);
 
     const spacesCount = decryptedText.split(" ").length - 1;
 
@@ -187,14 +216,28 @@ function App() {
     return decryptedText;
   }
 
-  function addTextToEncrypt(encText: string, txt: string, secret: string[]) {
+  function addTextToEncrypt(
+    encText: string,
+    txt: string,
+    secret: string[],
+    planeTextMaxLenght: number
+  ) {
     // console.log("Int Text", intstr);
+
+    planeTextMaxLenght = planeTextMaxLenght * 8;
 
     let newEncText = (encText.match(/.{1,8}/g) || []).join(" ");
 
-    txt = textToBinary(txt).split(" ").join("");
+    // extra 1 is a starting bit ... prepended at starting .
+    // "1" + textToBinary(txt).split(" ").join(""),
+    txt = padding(
+      textToBinary("1" + txt)
+        .split(" ")
+        .join(""),
+      planeTextMaxLenght
+    );
 
-    // console.log("Binary Text innst", txt);
+    console.log("Binary Plane Text", txt);
 
     newEncText = newEncText.split(" ").join("");
 
