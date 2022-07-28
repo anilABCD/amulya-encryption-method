@@ -16,10 +16,27 @@ function App() {
   let originalPlaneText = "";
 
   //IMPORTANT: should always be even ...
-  const bitsUsedForBinary = 12;
-  const bitsForRandomizing = bitsUsedForBinary - 4;
-  const regExRandomizeSplitBits = new RegExp(
-    ".{1," + bitsForRandomizing + "}",
+  const bits_LengthForRandomizedPadding = 12;
+
+  // NOTE :
+  // This below regExMinLengthSperatorOfBinary is used to seperate the binary ...
+  //
+  // Generated after ::: someRandomText :::: is binarized ...
+  // in to spaces ... result is in STEP 3.
+  // Eg:
+  // STEP 1 :
+  // Original is : 0101010100101001 to
+  // STEP 2 :
+  // based of this : if (bits_LengthForRandomizedPadding - 4) = 12-4 = 8 in regExMinLengthSperatorOfBinary
+  // STEP 3 :
+  // Result is : 01010101 00101001
+  // STEP 4 :
+  // Now  const bits_LengthForRandomizedPadding = 12; is used in paddingRandom();
+  // 101001010101 101100101001
+  // 1010 , 1011 is randomly generated and preFixed ...
+  //
+  const regExMinLengthSperatorOfBinary = new RegExp(
+    ".{1," + (bits_LengthForRandomizedPadding - 4) + "}",
     "g"
   );
 
@@ -315,10 +332,10 @@ function App() {
 
   function randomizeEntireData(intstr: string) {
     intstr = intstr.split(" ").join("");
-    intstr = (intstr.match(regExRandomizeSplitBits) || []).join(" ");
+    intstr = (intstr.match(regExMinLengthSperatorOfBinary) || []).join(" ");
     // console.log(intstr, regExRandomizeSplitBits);
     let resultEnc = intstr.split(" ").map((ele, index) => {
-      let result = paddingRandom(ele, bitsUsedForBinary);
+      let result = paddingRandom(ele, bits_LengthForRandomizedPadding);
       // console.log(result);
       return result;
     });
