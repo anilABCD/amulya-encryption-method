@@ -4,6 +4,10 @@ import "./App.css";
 
 import numbers from "./numbers.json";
 
+const config = {
+  isUniCode: false,
+};
+
 function App() {
   const [plnTxt, setPlane] = useState("abc");
   const [encTxt, setEnc] = useState("");
@@ -14,14 +18,27 @@ function App() {
   //IMPORTANT: should always be even ...
   const bitsUsedForBinary = 12;
   const bitsForRandomizing = bitsUsedForBinary - 4;
-
-  const decBitsUsed = 8;
-  const regExSplitBits = new RegExp(".{1," + decBitsUsed + "}", "g");
-
   const regExRandomizeSplitBits = new RegExp(
     ".{1," + bitsForRandomizing + "}",
     "g"
   );
+
+  const isUniCode = config.isUniCode;
+
+  //
+  // When using Unicode Character Set ...
+  // 16 ... other wise use 8
+  let decBitsUsed = 8;
+
+  if (isUniCode === true) {
+    decBitsUsed = 16;
+  }
+
+  const regExSplitBits = new RegExp(".{1," + decBitsUsed + "}", "g");
+
+  ///
+  const planeTextMaxLenght = (32 + 1) * decBitsUsed;
+  ///
 
   function shuffle(words: string) {
     var a = words.split(""),
@@ -50,7 +67,7 @@ function App() {
   }
 
   useEffect(() => {
-    encrypt("! \"#$%&'()*+,-./:;<=>?@[:;<=>?@[");
+    encrypt("! \"#%&'()*+,@[:;<=>?@[");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -88,7 +105,6 @@ function App() {
     // IMPORTANT: Extra 1 char info ...
     // Extra 1 is for starting char ... identifying starting character ...
     // so we can remove any extra characters , which are padding zeros ...
-    const planeTextMaxLenght = 32 + 1;
 
     someRandomText = shuffle(someRandomText);
 
@@ -104,16 +120,17 @@ function App() {
 
     encText = randomizeEntireData(encText).join(" ");
 
-    let generatedKey = generateKey(planeTextMaxLenght);
+    let generatedKey = generateKey();
+
+    //testing :
+    // let binary = textToBinary("! \"#$%&'()*+,-./:;<=>?@[:;<=>?@[");
+    // let binaryText = binaryToText(binary);
+    // console.log("TEMP", binary);
+    // console.log("TEMP", binaryText);
 
     const encDecKey = generatedKey.encDecKey;
 
-    encText = addTextToEncrypt(
-      encText,
-      planeText,
-      planeTextMaxLenght,
-      generatedKey
-    ).join("");
+    encText = addTextToEncrypt(encText, planeText, generatedKey).join("");
 
     for (let i = 0; i < encDecKey.length; i++) {
       let secretXorKey = encDecKey[i].secretXorKey;
@@ -180,7 +197,7 @@ function App() {
       originalPlaneText,
       originalPlaneText.length
     );
-    console.log("Decrypted Plane Text", decryptedText, secret.length);
+    console.log("Decrypted Plane Text", decryptedText, decryptedText.length);
 
     const decryptArray = (decryptedText.match(regExSplitBits) || [])
       .join(" ")
@@ -204,7 +221,7 @@ function App() {
       decryptedText = decryptedText.substring(removingIndex);
     }
 
-    // console.log("removingIndex", removingIndex);
+    console.log("removingIndex", removingIndex);
 
     decryptedText = (decryptedText.match(regExSplitBits) || [])
       .join(" ")
@@ -253,14 +270,11 @@ function App() {
   function addTextToEncrypt(
     encText: string,
     txt: string,
-    planeTextMaxLenght: number,
     generatedKey: GeneratedKeyType
   ) {
     // console.log("Int Text", intstr);
 
     const secretKey = generatedKey.encDecKey[0].secretKey;
-
-    planeTextMaxLenght = planeTextMaxLenght * decBitsUsed;
 
     let newEncText = (encText.match(regExSplitBits) || []).join(" ");
 
@@ -357,9 +371,10 @@ function App() {
     secretKey: string[];
     secretXorKey: string;
     rotations: number;
+    isUniCode: boolean;
   };
 
-  function generateKey(planeTextMaxLength: number) {
+  function generateKey() {
     let secretStartingCharGenerated: string = getRandomChars();
 
     let generatedKey: GeneratedKeyType = {
@@ -367,13 +382,12 @@ function App() {
       startingChar: secretStartingCharGenerated,
     };
 
-    planeTextMaxLength = planeTextMaxLength * decBitsUsed;
     for (let i = 0; i < 2; i++) {
       let key = shuffleParts(numbers.numbers.toString().split(","));
 
       const secretKey = key
         .split(",")
-        .splice(0, planeTextMaxLength)
+        .splice(0, planeTextMaxLenght)
         .sort((a, b) => parseInt(a) - parseInt(b));
 
       let key2 = shuffleParts(numbers.numbers.toString().split(","));
@@ -381,7 +395,7 @@ function App() {
       const secretXorKey = textToBinary(
         key2
           .split(",")
-          .splice(0, planeTextMaxLength)
+          .splice(0, planeTextMaxLenght)
           .sort((a, b) => parseInt(a) - parseInt(b))
           .join("")
       )
@@ -396,6 +410,7 @@ function App() {
         secretKey: secretKey,
         secretXorKey: secretXorKey,
         rotations: rotations,
+        isUniCode: config.isUniCode,
       };
 
       generatedKey.encDecKey.push(genKey);
@@ -500,6 +515,7 @@ function App() {
   }
 
   const textToBinary = (str = "", padding = decBitsUsed) => {
+    console.log("decBitsUsed", decBitsUsed);
     let res = "";
     res = str
       .split("")
