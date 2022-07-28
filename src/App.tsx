@@ -9,6 +9,20 @@ function App() {
   const [encTxt, setEnc] = useState("");
   const [decTxt, setDec] = useState("");
 
+  let originalPlaneText = "";
+
+  //IMPORTANT: should always be even ...
+  const bitsUsedForBinary = 12;
+  const bitsForRandomizing = bitsUsedForBinary - 4;
+
+  const decBitsUsed = 8;
+  const regExSplitBits = new RegExp(".{1," + decBitsUsed + "}", "g");
+
+  const regExRandomizeSplitBits = new RegExp(
+    ".{1," + bitsForRandomizing + "}",
+    "g"
+  );
+
   function shuffle(words: string) {
     var a = words.split(""),
       n = a.length;
@@ -36,7 +50,7 @@ function App() {
   }
 
   useEffect(() => {
-    encrypt("Prakash Ramya Krishnan @Sarojini");
+    encrypt("! \"#$%&'()*+,-./:;<=>?@[:;<=>?@[");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -113,7 +127,7 @@ function App() {
       // console.log("AFTER", encText.substring(0, 10));
     }
 
-    encText = (encText.match(/.{1,8}/g) || []).join(" ");
+    encText = (encText.match(regExSplitBits) || []).join(" ");
 
     encText = binaryToText(encText);
 
@@ -161,9 +175,14 @@ function App() {
       decryptedText += str[parseInt(secret[i])];
     }
 
-    // console.log("decryptedText", decryptedText, secret.length);
+    console.log(
+      "Orignial Plane Text",
+      originalPlaneText,
+      originalPlaneText.length
+    );
+    console.log("Decrypted Plane Text", decryptedText, secret.length);
 
-    const decryptArray = (decryptedText.match(/.{1,8}/g) || [])
+    const decryptArray = (decryptedText.match(regExSplitBits) || [])
       .join(" ")
       .split(" ");
 
@@ -181,13 +200,15 @@ function App() {
     // console.log("Removing From Index", removingIndex);
 
     if (removingIndex > -1) {
-      removingIndex = (removingIndex + 1) * 8;
+      removingIndex = (removingIndex + 1) * decBitsUsed;
       decryptedText = decryptedText.substring(removingIndex);
     }
 
     // console.log("removingIndex", removingIndex);
 
-    decryptedText = (decryptedText.match(/.{1,8}/g) || []).join(" ").trim();
+    decryptedText = (decryptedText.match(regExSplitBits) || [])
+      .join(" ")
+      .trim();
 
     // console.log("Decrypted Binary Text ", decryptedText);
     decryptedText = binaryToText(decryptedText);
@@ -239,20 +260,18 @@ function App() {
 
     const secretKey = generatedKey.encDecKey[0].secretKey;
 
-    planeTextMaxLenght = planeTextMaxLenght * 8;
+    planeTextMaxLenght = planeTextMaxLenght * decBitsUsed;
 
-    let newEncText = (encText.match(/.{1,8}/g) || []).join(" ");
+    let newEncText = (encText.match(regExSplitBits) || []).join(" ");
 
     // extra 1 is a starting bit ... prepended at starting .
     // "1" + textToBinary(txt).split(" ").join(""),
-    txt = padding(
-      textToBinary(generatedKey.startingChar + txt)
-        .split(" ")
-        .join(""),
-      planeTextMaxLenght
-    );
+    originalPlaneText = textToBinary(generatedKey.startingChar + txt)
+      .split(" ")
+      .join("");
+    txt = padding(originalPlaneText, planeTextMaxLenght);
 
-    // console.log("Binary Plane Text", txt);
+    // console.log("Binary Plane Text", txt, txt.length);
 
     newEncText = newEncText.split(" ").join("");
 
@@ -273,16 +292,19 @@ function App() {
     // console.log("Binary Text", intstr);
     // console.log("Binary Length", intstr.length);
 
-    let resultEnc = newEncText.match(/.{1,8}/g) || [];
+    let resultEnc = newEncText.match(regExSplitBits) || [];
 
     return resultEnc;
   }
 
   function randomizeEntireData(intstr: string) {
-    intstr = (intstr.match(/.{1,4}/g) || []).join(" ");
-
+    intstr = intstr.split(" ").join("");
+    intstr = (intstr.match(regExRandomizeSplitBits) || []).join(" ");
+    // console.log(intstr, regExRandomizeSplitBits);
     let resultEnc = intstr.split(" ").map((ele, index) => {
-      return (ele = paddingRandom(ele, 8));
+      let result = paddingRandom(ele, bitsUsedForBinary);
+      // console.log(result);
+      return result;
     });
 
     return resultEnc;
@@ -345,12 +367,13 @@ function App() {
       startingChar: secretStartingCharGenerated,
     };
 
+    planeTextMaxLength = planeTextMaxLength * decBitsUsed;
     for (let i = 0; i < 2; i++) {
       let key = shuffleParts(numbers.numbers.toString().split(","));
 
       const secretKey = key
         .split(",")
-        .splice(0, planeTextMaxLength * 8)
+        .splice(0, planeTextMaxLength)
         .sort((a, b) => parseInt(a) - parseInt(b));
 
       let key2 = shuffleParts(numbers.numbers.toString().split(","));
@@ -358,7 +381,7 @@ function App() {
       const secretXorKey = textToBinary(
         key2
           .split(",")
-          .splice(0, planeTextMaxLength * 8)
+          .splice(0, planeTextMaxLength)
           .sort((a, b) => parseInt(a) - parseInt(b))
           .join("")
       )
@@ -422,7 +445,7 @@ function App() {
 
   function padding(
     strForPadding: string,
-    padding: number = 8,
+    padding: number,
     charToPadding: string = "0"
   ) {
     let str = strForPadding;
@@ -435,23 +458,34 @@ function App() {
     return str;
   }
 
-  function paddingRandom(strForPadding: string, padding: number = 8) {
-    let charToPadding: string = "0";
+  function paddingRandom(strForPadding: string, padding: number) {
+    let charToPadding: string = "";
+    // console.log("str for padding", strForPadding);
+    // console.log(padding);
 
     let str = strForPadding;
+
     for (let i = 0; i < padding; i++) {
       if (str.length < padding) {
         let someRandome = Math.random() * 1 + 1;
+
+        // if (str.length + 1 === padding) {
+        //   charToPadding = "0";
+        //   str = charToPadding + str;
+        // } else {
+
+        // }
 
         if (someRandome > 1.5) {
           charToPadding = "1";
         } else {
           charToPadding = "0";
         }
-
         str = charToPadding + str;
       }
     }
+
+    // console.log(str);
 
     return str;
   }
@@ -465,7 +499,7 @@ function App() {
     return binToText;
   }
 
-  const textToBinary = (str = "", padding = 8) => {
+  const textToBinary = (str = "", padding = decBitsUsed) => {
     let res = "";
     res = str
       .split("")
@@ -475,7 +509,7 @@ function App() {
           for (let i = 0; i < padding; i++) {
             Code = "0" + Code;
 
-            if (Code.length === 8) {
+            if (Code.length === padding) {
               break;
             }
           }
