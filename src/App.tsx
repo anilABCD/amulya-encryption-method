@@ -28,16 +28,18 @@ function App() {
   //
   // When using Unicode Character Set ...
   // 16 ... other wise use 8
-  let decBitsUsed = 8;
+  let bitsUsed = 8;
 
   if (isUniCode === true) {
-    decBitsUsed = 16;
+    bitsUsed = 16;
   }
 
-  const regExSplitBits = new RegExp(".{1," + decBitsUsed + "}", "g");
+  const bits_UsedForEncAndDec = bitsUsed;
+
+  const regExSplitBits = new RegExp(".{1," + bits_UsedForEncAndDec + "}", "g");
 
   ///
-  const planeTextMaxLenght = (32 + 1) * decBitsUsed;
+  const planeTextMaxLenght = (32 + 1) * bits_UsedForEncAndDec;
   ///
 
   function shuffle(words: string) {
@@ -67,7 +69,7 @@ function App() {
   }
 
   useEffect(() => {
-    encrypt("! \"#%&'()*+,@[:;<=>?@[");
+    encrypt("! \"@&'()*+,@[:;<=>?@[");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -217,7 +219,7 @@ function App() {
     // console.log("Removing From Index", removingIndex);
 
     if (removingIndex > -1) {
-      removingIndex = (removingIndex + 1) * decBitsUsed;
+      removingIndex = (removingIndex + 1) * bits_UsedForEncAndDec;
       decryptedText = decryptedText.substring(removingIndex);
     }
 
@@ -514,8 +516,8 @@ function App() {
     return binToText;
   }
 
-  const textToBinary = (str = "", padding = decBitsUsed) => {
-    console.log("decBitsUsed", decBitsUsed);
+  const textToBinary = (str = "", padding = bits_UsedForEncAndDec) => {
+    console.log("decBitsUsed", bits_UsedForEncAndDec);
     let res = "";
     res = str
       .split("")
