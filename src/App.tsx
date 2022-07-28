@@ -5,7 +5,7 @@ import "./App.css";
 import numbers from "./numbers";
 
 const config = {
-  isUniCode: false,
+  isUniCode: true,
 };
 
 function App() {
@@ -86,7 +86,7 @@ function App() {
   }
 
   useEffect(() => {
-    encrypt("!absdfasdfsadf");
+    encrypt("@chinese : 是䘆昵욁駍耀쀀耀ꀀ");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
