@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import "./App.css";
 
@@ -12,6 +12,8 @@ function App() {
   const [plnTxt, setPlane] = useState("abc");
   const [encTxt, setEnc] = useState("");
   const [decTxt, setDec] = useState("");
+
+  const inputRef = useRef() as React.MutableRefObject<HTMLInputElement>;
 
   let originalPlaneText = "";
 
@@ -72,21 +74,8 @@ function App() {
     return a.join("");
   }
 
-  function shuffleParts(words: string[]) {
-    var a = words;
-    let n = words.length;
-
-    for (var i = n - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var tmp = a[i];
-      a[i] = a[j];
-      a[j] = tmp;
-    }
-    return a.splice(0, n).join(",");
-  }
-
   useEffect(() => {
-    encrypt("@chinese : 是䘆昵욁駍耀쀀耀ꀀ");
+    encrypt({}, "@chinese : 是䘆昵욁駍耀쀀耀ꀀ");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -94,8 +83,10 @@ function App() {
     return str.substring(0, index) + stringToAdd + str.substring(index + 1);
   }
 
-  function encrypt(planeText: string) {
+  function encrypt(event: any, data?: string) {
     console.clear();
+
+    let planeText = inputRef.current.value;
 
     setPlane(planeText);
 
@@ -601,23 +592,84 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        Plane Text : <br />
-        <br /> <div>{plnTxt}</div>
-        Length : {plnTxt.length}
-        <br />
-        <br />
-        Encrypted Text : <br /> <br />{" "}
-        <div style={{ wordBreak: "break-all" }}>{encTxt}</div>
-        Length : {encTxt.length}
-        <br />
-        <br />
-        Decrypted Text : <br /> <br />{" "}
-        <div style={{ wordBreak: "break-all" }}>{decTxt}</div>
-        Length : {decTxt.length}
-        <br />
-        <br />
-      </header>
+      <div className="App-toolbar ">
+        Anshika & Amulya & Kajal Encryption Technique
+      </div>
+
+      <br />
+      <div>
+        <input className="textinput" ref={inputRef} type="text"></input>
+        <span>
+          {" "}
+          <button className="button" onClick={encrypt}>
+            Encrypt
+          </button>{" "}
+        </span>
+        {/* <span>
+          {" "}
+          {displayDevConrols && (
+            <button className="button" onClick={generateEncDec}>
+              Generate Key
+            </button>
+          )}
+        </span> */}
+        <br /> <br />
+        <div className="flex-container" style={{ textAlign: "left" }}>
+          <div className=" ">
+            <b>
+              <div className="pln text" style={{ textAlign: "left" }}>
+                {" "}
+                plane text :{" "}
+              </div>{" "}
+            </b>
+            <div className="plane result plane-and-dec-result">
+              {" "}
+              <br />
+              {plnTxt}
+              <div className="length">Plane Text Length : {plnTxt.length}</div>
+            </div>{" "}
+            <br />{" "}
+          </div>
+          <div className="">
+            <b>
+              <div className="enc text" style={{ textAlign: "left" }}>
+                {" "}
+                encrypted text :{" "}
+              </div>
+            </b>{" "}
+            <br />{" "}
+            <div className="encrypted result">
+              {" "}
+              <br /> {encTxt}{" "}
+              <div className="length"> Length : {encTxt.length}</div>
+            </div>
+            <br /> <br />{" "}
+          </div>
+          <div className=" ">
+            <b>
+              <div className="dec text" style={{ textAlign: "left" }}>
+                {" "}
+                decrypted text :{" "}
+              </div>
+              {/* <div style={{ textAlign: "center" }}>
+                {" "}
+                <button className="button" onClick={decrypt}>
+                  Decrypt
+                </button>
+                <br /> <br />
+              </div>{" "} */}
+            </b>{" "}
+            <div className="decrypted result plane-and-dec-result dec-result">
+              {" "}
+              <br />
+              {decTxt} <div className="length"> Length : {decTxt.length}</div>
+              <br />
+              <br />
+              Spaces replaced with @ : {decTxt.replaceAll(" ", "@")}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

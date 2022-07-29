@@ -1,5 +1,8 @@
 .App {
   text-align: center;
+
+  font-size: large;
+  min-height: 100vh;
 }
 
 .App-logo {
@@ -11,6 +14,15 @@
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
   }
+}
+
+.App-toolbar {
+  margin-top: 5px;
+  color: rgba(1, 2, 5, 0.729);
+  font-size: 25px;
+  font-weight: 900;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
 }
 
 .App-header {
@@ -36,3 +48,89 @@
     transform: rotate(360deg);
   }
 }
+
+.button {
+  height: 3rem;
+  width: 20rem;
+}
+
+.textinput {
+  height: 2.5rem;
+  width: 50rem;
+  font-size: medium;
+  max-width: 30rem;
+}
+
+.text {
+  word-break: break-all;
+}
+
+.plane {
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+    "Lucida Sans", Arial, sans-serif;
+  color: orangered;
+  font-weight: 500;
+  text-align: center;
+  font-size: large;
+  font-size: 15px;
+  color: black;
+}
+
+.encrypted {
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  color: blue;
+  font-size: 15px;
+  color: black;
+}
+
+.decrypted {
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+    "Lucida Sans", Arial, sans-serif;
+  font-weight: 500;
+  text-align: center;
+  color: black;
+  font-size: 15px;
+}
+
+.gen-key {
+  display: none;
+}
+
+.flex-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* .flex-container > div {
+} */
+
+.result {
+  min-height: 60px;
+  word-break: break-all;
+  color: green;
+}
+
+.plane-and-dec-result {
+  font-size: 20px;
+  color: darkgreen;
+}
+
+.dec-result {
+  color: blue;
+}
+
+.length {
+  margin: 10px;
+  color: black;
+}
+
+/* .pln {
+  color: green;
+}
+
+.enc {
+}
+
+.dec {
+  color: green;
+} */
