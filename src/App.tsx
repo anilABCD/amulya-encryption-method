@@ -17,8 +17,23 @@ function App() {
 
   let originalPlaneText = "";
 
+  const isUniCode = config.isUniCode;
+
+  //
+  // When using Unicode Character Set ...
+  // 16 ... other wise use 8
+  let bitsUsed = 8;
+
+  if (isUniCode === true) {
+    bitsUsed = 16;
+  }
+
+  const bits_UsedForEncAndDec = bitsUsed;
+
+  const extracRandomNumberGeneratingLength = 4;
   //IMPORTANT: should always be even ...
-  const bits_LengthForRandomizedPadding = 120;
+  const bits_LengthForRandomizedPadding =
+    bitsUsed + extracRandomNumberGeneratingLength;
 
   // NOTE :
   // This below regExMinLengthSperatorOfBinary is used to seperate the binary ...
@@ -38,22 +53,11 @@ function App() {
   // 1010 , 1011 is randomly generated and preFixed ...
   //
   const regExMinLengthSperatorOfBinary = new RegExp(
-    ".{1," + (bits_LengthForRandomizedPadding - 40) + "}",
+    ".{1," +
+      (bits_LengthForRandomizedPadding - extracRandomNumberGeneratingLength) +
+      "}",
     "g"
   );
-
-  const isUniCode = config.isUniCode;
-
-  //
-  // When using Unicode Character Set ...
-  // 16 ... other wise use 8
-  let bitsUsed = 8;
-
-  if (isUniCode === true) {
-    bitsUsed = 16;
-  }
-
-  const bits_UsedForEncAndDec = bitsUsed;
 
   const regExSplitBits = new RegExp(".{1," + bits_UsedForEncAndDec + "}", "g");
 
@@ -104,8 +108,14 @@ function App() {
     // );
 
     // IMPORTANT: min 11 letters to produce : 128 chars by randomizeEntireData();
+
+    // length : 96 total
     let someRandomText =
       "! \"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890";
+
+    // someRandomText += someRandomText;
+    // someRandomText += someRandomText;
+
     // IMPORTANT: Min 11 letters to produce : 128 chars by randomizeEntireData();
     // 1 extracter adds 7 more letters because of randomizeEntireData(); function .
     // "anshika-kajal-amulya-lionanshika-kajal-amulya-lionanshika-kajal-amulya-lion";
@@ -122,14 +132,28 @@ function App() {
       encText += someRandomText[i].charCodeAt(0).toString();
     }
 
-    // console.log(encText.length);
+    const totalBitsUsed =
+      someRandomText.length *
+      (bits_UsedForEncAndDec + extracRandomNumberGeneratingLength);
 
-    encText = textToBinary(encText);
+    console.log(
+      "totalBitsUsed",
+      someRandomText.length,
+      "*",
+      bits_UsedForEncAndDec,
+      extracRandomNumberGeneratingLength,
+      totalBitsUsed
+    );
+
+    console.log(encText.length);
+
+    encText = textToBinary(someRandomText);
 
     encText = randomizeEntireData(encText).join(" ");
+    const maxLengthToSpreadKeyInEntireBinary = encText.length - 300;
 
     //generateKey()
-    let generatedKey = generateKey();
+    let generatedKey = generateKey(maxLengthToSpreadKeyInEntireBinary);
 
     //testing :
     // let binary = textToBinary("! \"#$%&'()*+,-./:;<=>?@[:;<=>?@[");
@@ -394,6 +418,8 @@ function App() {
   type GeneratedKeyType = {
     encDecKey: encDecType[];
     startingChar: string;
+    secretBucketIndexes: number[];
+    alphabetEncDecMappings: any;
   };
 
   type encDecType = {
@@ -416,13 +442,15 @@ function App() {
     return a.join(",");
   }
 
-  function generateSecretArray() {
+  function generateSecretArray(maxLengthToSpreadKeyInEntireBinary: number) {
     // console.log("numbers", numbers.numbers, planeTextMaxLenght);
 
     const numbers2 = [...numbers];
 
     // console.log(numbers2.length);
-    let key = shuffleArray(numbers2.splice(0, 2600).join(","));
+    let key = shuffleArray(
+      numbers2.splice(0, maxLengthToSpreadKeyInEntireBinary).join(",")
+    );
 
     let splicedKey = key
       .split(",")
@@ -434,22 +462,37 @@ function App() {
     return splicedKey;
   }
 
-  function generateKey() {
+  function generateKey(maxLengthToSpreadKeyInEntireBinary: number) {
     let secretStartingCharGenerated: string = getRandomChars();
+
+    const secretBucketIndexes = [
+      21, 22, 23, 29, 30, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+      16, 17, 18, 19, 20, 24, 25, 26, 27, 28,
+    ];
+
+    const alphabetEncDecMappings = generateMappingsOfAllAlphabets();
 
     let generatedKey: GeneratedKeyType = {
       encDecKey: [],
       startingChar: secretStartingCharGenerated,
+      secretBucketIndexes: secretBucketIndexes,
+      alphabetEncDecMappings: alphabetEncDecMappings,
     };
 
     for (let i = 0; i < 1; i++) {
-      const secretKey = generateSecretArray();
+      console.log(
+        "maxLengthToSpreadKeyInEntireBinary",
+        maxLengthToSpreadKeyInEntireBinary
+      );
+      const secretKey = generateSecretArray(maxLengthToSpreadKeyInEntireBinary);
 
       // console.log(secretKey);
 
       // console.log(planeTextMaxLenght);
 
-      const secretXorKey = textToBinary(generateSecretArray().join(""))
+      const secretXorKey = textToBinary(
+        generateSecretArray(maxLengthToSpreadKeyInEntireBinary).join("")
+      )
         .split(" ")
         .join("");
 
@@ -472,6 +515,89 @@ function App() {
     console.log("\n", generatedKey, "\n\n");
 
     return generatedKey;
+  }
+
+  function getAllASCIICharacters() {
+    let specialCharacters = "! \"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
+    let alphabets = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let numbers = "0123456789";
+
+    return specialCharacters + alphabets + numbers;
+
+    // let allASCIIChars = "";
+    // for (var i = 32; i <= 126; i++) {
+    //   allASCIIChars += String.fromCharCode(i);
+    // }
+    // return allASCIIChars;
+  }
+
+  function generateMappingsOfAllAlphabets() {
+    let allCharacters = getAllASCIICharacters();
+
+    let genEncAndDecMapper: any = {};
+    let allPasswordCharacters = allCharacters; // specialCharacters + alphabets + numbers;
+    // Shuffle will always give random characters for allPasswordCharacters .
+    // So we wont need to write all the above characters again and again .
+    // For every project .
+    allPasswordCharacters = shuffle(allPasswordCharacters);
+    let originalPasswordCharacters = allPasswordCharacters;
+
+    let bucket = 0;
+    let nintyFiveModular = 1;
+    genEncAndDecMapper[bucket] = {};
+
+    for (let bucket = 0; bucket < allPasswordCharacters.length; bucket++) {
+      genEncAndDecMapper[bucket] = {};
+      allPasswordCharacters = unshift(allPasswordCharacters);
+
+      for (let i = 0; i < allPasswordCharacters.length; i++) {
+        let newKey = allPasswordCharacters[i];
+
+        let modulus = allPasswordCharacters.length + 1;
+        if (nintyFiveModular % modulus === 0) {
+          nintyFiveModular = 1;
+        }
+
+        genEncAndDecMapper[bucket][
+          "D" + originalPasswordCharacters[(nintyFiveModular % modulus) - 1]
+        ] = newKey;
+        genEncAndDecMapper[bucket]["E" + newKey] =
+          originalPasswordCharacters[(nintyFiveModular % modulus) - 1];
+
+        //#region  dont delete this code
+        // NOTE : IMPORTANT: dont delete this below commented code ...
+        //
+        // This is the last phase before the rotation and swapping ...
+        //
+        // Converts text to 2 digit integers :
+        //
+        // single letter chars are placed exactyle in the encryption ...
+        // dual numbers 10 to 95 as normally used ...
+        // then rotated ... randomly and swapped ... and then rotated ...
+        // this is the logic .
+        //
+        // This code not used anywhere but in future ...
+        // In last phase we can use this number
+        // Converting all to numbers ...
+        //
+        // Converts text to 2 digit integers ...
+        //
+        // Un Comment this code in the future ...
+        // Never delete this code ...
+        //
+        let iToSting = padding(i.toString(), 2);
+        // console.current(bucket, newKey, iToSting);
+        genEncAndDecMapper[bucket]["E-NUM" + newKey] = iToSting;
+        genEncAndDecMapper[bucket]["D-NUM" + iToSting] = newKey;
+        //
+        // NOTE : IMPORTANT: dont delete this above commeted code ...
+        //#endregion  dont delete this code
+
+        nintyFiveModular++;
+      }
+    }
+
+    return genEncAndDecMapper;
   }
 
   // function reverse(str: string) {
