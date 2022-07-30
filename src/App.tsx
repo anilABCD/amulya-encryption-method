@@ -30,7 +30,7 @@ function App() {
 
   const bits_UsedForEncAndDec = bitsUsed;
 
-  const extracRandomNumberGeneratingLength = 4;
+  const extracRandomNumberGeneratingLength = 12;
   //IMPORTANT: should always be even ...
   const bits_LengthForRandomizedPadding =
     bitsUsed + extracRandomNumberGeneratingLength;
@@ -150,10 +150,9 @@ function App() {
     encText = textToBinary(someRandomText);
 
     encText = randomizeEntireData(encText).join(" ");
-    const maxLengthToSpreadKeyInEntireBinary = encText.length - 300;
 
     //generateKey()
-    let generatedKey = generateKey(maxLengthToSpreadKeyInEntireBinary);
+    let generatedKey = generateKey(totalBitsUsed);
 
     //testing :
     // let binary = textToBinary("! \"#$%&'()*+,-./:;<=>?@[:;<=>?@[");
@@ -324,14 +323,19 @@ function App() {
     // "1" + textToBinary(txt).split(" ").join(""),
 
     txt = padding(
-      textToBinary(generatedKey.startingChar + txt)
+      textToBinary((generatedKey.startingChar + txt).substring(0, 33))
         .split(" ")
         .join(""),
       planeTextMaxLenght
     );
 
     originalPlaneText = txt;
-    // console.log("Binary Plane Text", txt, txt.length);
+    console.log(
+      "Binary Plane Text with planeTextMaxLength",
+      txt,
+      txt.length,
+      planeTextMaxLenght
+    );
 
     newEncText = newEncText.split(" ").join("");
 
@@ -449,13 +453,29 @@ function App() {
 
     // console.log(numbers2.length);
     let key = shuffleArray(
+      numbers2.splice(0, maxLengthToSpreadKeyInEntireBinary - 10).join(",")
+    );
+
+    let splicedKey = key.split(",").splice(0, planeTextMaxLenght);
+    // .sort((a, b) => parseInt(b) - parseInt(a));
+
+    // console.log(key);
+
+    return splicedKey;
+  }
+
+  function generateSecretXORArray(maxLengthToSpreadKeyInEntireBinary: number) {
+    // console.log("numbers", numbers.numbers, planeTextMaxLenght);
+
+    const numbers2 = [...numbers];
+
+    // console.log(numbers2.length);
+    let key = shuffleArray(
       numbers2.splice(0, maxLengthToSpreadKeyInEntireBinary).join(",")
     );
 
-    let splicedKey = key
-      .split(",")
-      .splice(0, planeTextMaxLenght)
-      .sort((a, b) => parseInt(b) - parseInt(a));
+    let splicedKey = key.split(",");
+    // .sort((a, b) => parseInt(b) - parseInt(a));
 
     // console.log(key);
 
@@ -490,11 +510,16 @@ function App() {
 
       // console.log(planeTextMaxLenght);
 
-      const secretXorKey = textToBinary(
+      let secretXorKey = textToBinary(
         generateSecretArray(maxLengthToSpreadKeyInEntireBinary).join("")
       )
         .split(" ")
         .join("");
+
+      secretXorKey = secretXorKey.substring(
+        0,
+        maxLengthToSpreadKeyInEntireBinary
+      );
 
       // console.log("secretXorKey", secretXorKey);
 
@@ -642,13 +667,14 @@ function App() {
     padding: number,
     charToPadding: string = "0"
   ) {
+    // console.log("padding", padding);
     let str = strForPadding;
     for (let i = 0; i < padding; i++) {
       if (str.length < padding) {
         str = charToPadding + str;
       }
     }
-
+    // console.log("length", str.length);
     return str;
   }
 
